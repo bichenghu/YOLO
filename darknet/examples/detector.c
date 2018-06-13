@@ -601,10 +601,12 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
         //printf("%d\n", nboxes);
         //if (nms) do_nms_obj(boxes, probs, l.w*l.h*l.n, l.classes, nms);
         if (nms) do_nms_sort(dets, nboxes, l.classes, nms);
-        draw_detections(im, dets, nboxes, thresh, names, alphabet, l.classes);
+        //draw_detections(im, dets, nboxes, thresh, names, alphabet, l.classes);
+        draw_detections_person(input, im, dets, nboxes, thresh, names, alphabet, l.classes);
         free_detections(dets, nboxes);
         if(outfile){
             save_image(im, outfile);
+            printf("image saved success!\n");
         }
         else{
             save_image(im, "predictions");
