@@ -185,6 +185,7 @@ void *detect_loop(void *ptr)
 void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const char *filename, char **names, int classes, int delay, char *prefix, int avg_frames, float hier, int w, int h, int frames, int fullscreen)
 {
     //demo_frame = avg_frames;
+    int frame_id=0;
     image **alphabet = load_alphabet();
     demo_names = names;
     demo_alphabet = alphabet;
@@ -254,7 +255,9 @@ void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const ch
         if(!prefix){
             fps = 1./(what_time_is_it_now() - demo_time);
             demo_time = what_time_is_it_now();
+            frame_id++;
             display_in_thread(0);
+            
         }else{
             char name[256];
             sprintf(name, "%s_%08d", prefix, count);

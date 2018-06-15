@@ -1,4 +1,9 @@
 #include "darknet.h"
+#include <unistd.h>  
+#include <dirent.h>  
+#include <stdlib.h>  
+#include <sys/stat.h> 
+
 
 static int coco_ids[] = {1,2,3,4,5,6,7,8,9,10,11,13,14,15,16,17,18,19,20,21,22,23,24,25,27,28,31,32,33,34,35,36,37,38,39,40,41,42,43,44,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,67,70,72,73,74,75,76,77,78,79,80,81,82,84,85,86,87,88,89,90};
 
@@ -559,8 +564,9 @@ void validate_detector_recall(char *cfgfile, char *weightfile)
 }
 
 
-void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, char *outfile, int fullscreen)
+void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, char *outfile, int fullscreen, char *idir, char *odir)
 {
+    
     list *options = read_data_cfg(datacfg);
     char *name_list = option_find_str(options, "names", "data/names.list");
     char **names = get_labels(name_list);
@@ -573,16 +579,85 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
     char buff[256];
     char *input = buff;
     float nms=.45;
-    while(1){
-        if(filename){
+    while(1)
+    {
+        if(filename)
+        {        
             strncpy(input, filename, 256);
-        } else {
-            printf("Enter Image Path: ");
-            fflush(stdout);
-            input = fgets(input, 256, stdin);
-            if(!input) return;
-            strtok(input, "\n");
         }
+        else 
+        {   
+            if(!idir || !odir)
+            {
+                printf("Enter Image Path: ");
+                fflush(stdout);
+                input = fgets(input, 256, stdin);
+                if(!input) 
+                    return;
+                strtok(input, "\n");
+            }
+            else
+            {
+                //idir && odir
+		char imagepath[512];
+		char savedir[512];
+		struct dirent *imagename;   //readdir return 
+    		DIR *dir;   
+			
+    		dir = opendir(idir);
+                while((imagename=readdir(dir))!= NULL)
+    	        {
+        	    //pass ./ ../
+		    if(!strcmp(imagename->d_name,".")||!strcmp(imagename->d_name,".."))  
+            	        continue;
+
+		    sprintf(imagepath,"%s%s",idir,imagename->d_name);
+		    image im = load_image_color(imagepath, 0, 0);
+                    image sized = letterbox_image(im, net->w, net->h);
+            	    layer l = net->layers[net->n-1];
+
+		    float *X = sized.data;
+		    time=what_time_is_it_now();
+		    network_predict(net, X);
+		    printf("%s: Predicted in %f seconds.\n", imagepath, what_time_is_it_now()-time);
+		    int nboxes = 0;
+		    detection *dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, 0, 1, &nboxes);
+ 
+            	    if (nms) 
+                        do_nms_sort(dets, nboxes, l.classes, nms);
+                    //draw_detections(im, dets, nboxes, thresh, names, alphabet, l.classes);
+         	    draw_detections_person(imagename->d_name, odir, im, dets, nboxes, thresh, names, alphabet, l.classes);
+            	    free_detections(dets, nboxes);
+            	    char imagesdir[512];
+		    sprintf(imagesdir,"%s%s",odir,"images/");	
+            	    sprintf(savedir,"%s%s",imagesdir,imagename->d_name);
+		    //strcat(odir, imagename->d_name);
+		    int k = 0;
+		    for (k = strlen(savedir)-1; k>=0; k--)
+        		{
+            		    if((savedir[k]!='j')&&(savedir[k]!='p')&&(savedir[k]!='g')&&(savedir[k]!='.'))
+            		    {         
+	        		break;
+                 	    }    
+            		    else
+            		    {	       
+	        	   	savedir[k] = '\0';
+            		    }
+        		}
+		    
+            	    save_image(im, savedir);
+           	    printf("image saved success!\n");
+
+            	    free_image(im);
+            	    free_image(sized);    		
+                 }
+		 closedir(dir);
+		 break;
+            }				
+	   
+        }
+        
+    
         image im = load_image_color(input,0,0);
         image sized = letterbox_image(im, net->w, net->h);
         //image sized = resize_image(im, net->w, net->h);
@@ -602,7 +677,8 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
         //if (nms) do_nms_obj(boxes, probs, l.w*l.h*l.n, l.classes, nms);
         if (nms) do_nms_sort(dets, nboxes, l.classes, nms);
         //draw_detections(im, dets, nboxes, thresh, names, alphabet, l.classes);
-        draw_detections_person(input, im, dets, nboxes, thresh, names, alphabet, l.classes);
+        //person detection and save labels
+	    draw_detections_person(input, odir, im, dets, nboxes, thresh, names, alphabet, l.classes);
         free_detections(dets, nboxes);
         if(outfile){
             save_image(im, outfile);
@@ -839,8 +915,11 @@ void run_detector(int argc, char **argv)
     char *datacfg = argv[3];
     char *cfg = argv[4];
     char *weights = (argc > 5) ? argv[5] : 0;
-    char *filename = (argc > 6) ? argv[6]: 0;
-    if(0==strcmp(argv[2], "test")) test_detector(datacfg, cfg, weights, filename, thresh, hier_thresh, outfile, fullscreen);
+    //char *filename = (argc > 6) ? argv[6]: 0;
+    char *filename = find_char_arg(argc, argv, "-input", 0);
+    char *idir = find_char_arg(argc, argv, "-idir", 0);
+    char *odir = find_char_arg(argc, argv, "-odir", 0);
+    if(0==strcmp(argv[2], "test")) test_detector(datacfg, cfg, weights, filename, thresh, hier_thresh, outfile, fullscreen, idir, odir);
     else if(0==strcmp(argv[2], "train")) train_detector(datacfg, cfg, weights, gpus, ngpus, clear);
     else if(0==strcmp(argv[2], "valid")) validate_detector(datacfg, cfg, weights, outfile);
     else if(0==strcmp(argv[2], "valid2")) validate_detector_flip(datacfg, cfg, weights, outfile);

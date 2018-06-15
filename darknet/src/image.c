@@ -309,35 +309,60 @@ void draw_detections(image im, detection *dets, int num, float thresh, char **na
     }
 }
 
-/*
-*add function draw_detections_person 20180612
-*/
+//**********draw_detections_person_20180612**********//
 
-void draw_detections_person(char *filename, image im, detection *dets, int num, float thresh, char **names, image **alphabet, int classes)
+void draw_detections_person(char *imagename, char *odir, image im, detection *dets, int num, float thresh, char **names, image **alphabet, int classes)
 {
     int i,j;
     int count=0;
-    char *output = filename;
-    //xxx.jpg to xxx.txt
-    int k=0;
-    for (k = strlen(filename)-1; k>=0; k--)
+    char *output=0;
+    char outdir[512];
+    if(!odir)
     {
-    if((filename[k]!='j')&&(filename[k]!='p')&&(filename[k]!='g')&&(filename[k]!='.'))
-    {
-         break;
+        // danzhang
+        output = imagename;
+        //xxx.jpg to xxx.txt
+        int k=0;
+        for (k = strlen(imagename)-1; k>=0; k--)
+        {
+            if((imagename[k]!='j')&&(imagename[k]!='p')&&(imagename[k]!='g')&&(imagename[k]!='.'))
+            {         
+	        break;
+            }    
+            else
+            {	       
+	        output[k] = '\0';
+            }
+        }
+        output = strcat(imagename, ".txt");
+     }
+     else
+     {	
+	//duozhang
+        //output = strcat(odir,imagename);
+	char labelsdir[512];
+        sprintf(labelsdir,"%s%s", odir, "labels/");
+	sprintf(outdir,"%s%s", labelsdir, imagename);
+        int k=0;
+        for (k = strlen(outdir)-1; k>=0; k--)
+        {
+            if((outdir[k]!='j')&&(outdir[k]!='p')&&(outdir[k]!='g')&&(outdir[k]!='.'))
+            {         
+	        break;
+            }    
+            else
+            {	       
+	        outdir[k] = '\0';
+            }
+        }
+	output = strcat(outdir, ".txt"); 		
     }
-    else
-    {
-        output[k] = '\0';
-    }
-    }
-    output = strcat(filename, ".txt");
-
     //new xxx.txt
     FILE *fp;
-        if ( (fp = fopen(output, "w+")) == NULL ){
-            printf("wrong:\n");
-        }
+    if ( (fp = fopen(output, "w+")) == NULL )
+    {
+        printf("wrong:\n");
+    }
 
     for(i = 0; i < num; ++i)
     {
@@ -429,6 +454,7 @@ void draw_detections_person(char *filename, image im, detection *dets, int num, 
     //关闭txt文件
     fclose(fp);
 }
+//**********draw_detections_person_20180612**********//
 
 
 void transpose_image(image im)
@@ -813,6 +839,8 @@ void save_image_jpg(image p, const char *name)
     cvReleaseImage(&disp);
     free_image(copy);
 }
+
+
 #endif
 
 void save_image_png(image im, const char *name)
