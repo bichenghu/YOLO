@@ -13,7 +13,7 @@ def getAllFrames(dir):
    return [os.path.join(dir,f) for f in os.listdir(dir) if f.endswith('.jpg')]
 
 #循环读图
-for dir in getAllFrames(r'/home/hbc/data/smartcity/dataset1/Cam1/frames/'):
+for dir in getAllFrames(r'/home/hbc/data/smartcity/dataset3/Cam5/frames/'):
     frame = Image.open(dir)
     label = os.path.splitext(dir.replace('frames','labels'))[0]+'.txt'
     print ('in '+label)
@@ -30,6 +30,6 @@ for dir in getAllFrames(r'/home/hbc/data/smartcity/dataset1/Cam1/frames/'):
         #box中的数必须是 int 否则会报错
         bbox = [int(x),int(y),int(w),int(h)]
         result = frame.crop(bbox)
-        gallery = os.path.splitext(dir.replace('frames/','gallery/dataset1_Cam1_'))[0]+'_'+str(i)+'.jpg'
+        gallery = os.path.splitext(dir.replace('frames/','gallery/dataset3_Cam5_'))[0]+'_'+str(i)+'.jpg'
         result.save(gallery)
 
