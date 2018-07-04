@@ -5,29 +5,45 @@ The original YOLO run with [darknet](http://pjreddie.com/darknet) which is an op
 
 This project is a modified version for some requirements such as saving labes, saving video and creating dataset for training.
 
-### Modified 1 检测多张图片并保存标签信息
-对于单张图片检测：
+### Modified 1 Save labels for Multiple images 
+Single image：
 ```
-#不指定输出路径
+#without -out
 ./darknet detect cfg/yolov3.cfg yolov3.weights /home/username/data/xxx.jpg
-#指定输出路径
+#with -out
 ./darknet detect cfg/yolov3.cfg yolov3.weights /home/username/data/xxx.jpg -out result
 ```
-其中不指定输出路径的命令在darknet/目录下生成predictions.jpg；指定输出路径的时候只需要输入图片名，图片格式规定为.jpg
+You will see some output like this:
+```
+layer     filters    size              input                output
+    0 conv     32  3 x 3 / 1   416 x 416 x   3   ->   416 x 416 x  32  0.299 BFLOPs
+    1 conv     64  3 x 3 / 2   416 x 416 x  32   ->   208 x 208 x  64  1.595 BFLOPs
+    .......
+  105 conv    255  1 x 1 / 1    52 x  52 x 256   ->    52 x  52 x 255  0.353 BFLOPs
+  106 detection
+truth_thresh: Using default '1.000000'
+Loading weights from yolov3.weights...Done!
+data/dog.jpg: Predicted in 0.029329 seconds.
+dog: 99%
+truck: 93%
+bicycle: 99%
+```
+If you run the detect command without -out, the detection result will save as predictions.jpg.
+If you run the detect command with -out and 'name' which you want to save, the detection result will save as name.jpg.
 
-事实上，单张图片的测试也可以用如下通用方式：
+In fact, the detect command is shorthand for a more general version of the command. It is equivalent to the command:
 ```
 ./darknet detctor test cfg/coco.data cfg/yolov3.cfg yolov3.weights /home/username/data/xxx.jpg
 ```
-对于多张图片检测：
-如果上述通用命令不指定输出路径，就能实现多张图片测试，作者写的多张图片测试是在加载一次模型后，再一次一次的输入图片路径测试，这样的方式似乎不太实用，一般情况下我们想在一个文件夹下对所有图片进行检测，保存其标签信息，这就需要到修改源码来实现。需要修改到的文件主要有：include/darknet.h src/image.c examples/detector.c examples/darknet.c
+Multiple images：
+If you run the detect command without directory of the test image, you can test multiple images after loading the model.However, we always want to detect all images in a directory and save the results which need to modify the source code and complie it again. Here is the main file need to be modified: include/darknet.h src/image.c examples/detector.c examples/darknet.c
 
-修改之后，对于单张图片，可以用如下命令：
+After modified, you can detect single image with this command:
 ```
 ./darknet detect cfg/yolov3.cfg yolov3.weights -input /home/username/data/xxx.jpg -out test
 ```
-对于文件夹内多张图片，可以用如下命令：
+For multiple images, you can use this command:
 ```
 ./darknet detect cfg/yolov3.cfg yolov3.weights -idir /home/username/data/imagedir/ -odir /home/username/data/results/
 ```
-当然，在results目录下要提前建好images和labels文件夹。
+And you should create images folder and labels folder in the results directory in advance.
