@@ -4,9 +4,9 @@ import os
 from os import listdir, getcwd
 from os.path import join
 
-sets=[('SC', 'train'), ('SC', 'val'), ('SC', 'test')]
+sets=[('2018', 'train'), ('2018', 'val'), ('2018', 'test')]
 
-classes = ["pedestrain"]
+classes = ['Pedestrian']
 
 def convert(size, box):
     dw = 1./size[0]
@@ -22,8 +22,8 @@ def convert(size, box):
     return (x,y,w,h)
 
 def convert_annotation(year, image_id):
-    in_file = open('VOCdevkit/VOC%s/Annotations/%s.xml'%(year, image_id))
-    out_file = open('VOCdevkit/VOC%s/labels/%s.txt'%(year, image_id), 'w')
+    in_file = open('/home/hbc/data/smartcity/SCdevkit/SC%s/Annotations/%s.xml' % (year, image_id))
+    out_file = open('darknet/scripts/SCdevkit/SC%s/labels/%s.txt' % (year, image_id), 'w')
     tree=ET.parse(in_file)
     root = tree.getroot()
     size = root.find('size')
@@ -31,9 +31,11 @@ def convert_annotation(year, image_id):
     h = int(size.find('height').text)
 
     for obj in root.iter('object'):
-        difficult = obj.find('difficult').text
+        #difficult = obj.find('difficult').text
         cls = obj.find('name').text
-        if cls not in classes or int(difficult) == 1:
+        #if cls not in classes or int(difficult) == 1:
+        #    continue
+        if cls not in classes :
             continue
         cls_id = classes.index(cls)
         xmlbox = obj.find('bndbox')
@@ -44,12 +46,12 @@ def convert_annotation(year, image_id):
 wd = getcwd()
 
 for year, image_set in sets:
-    if not os.path.exists('VOCdevkit/VOC%s/labels/'%(year)):
-        os.makedirs('VOCdevkit/VOC%s/labels/'%(year))
-    image_ids = open('VOCdevkit/VOC%s/ImageSets/Main/%s.txt'%(year, image_set)).read().strip().split()
-    list_file = open('%s_%s.txt'%(year, image_set), 'w')
+    if not os.path.exists('darknet/scripts/SCdevkit/SC%s/labels/'%(year)):
+        os.makedirs('darknet/scripts/SCdevkit/SC%s/labels/'%(year))
+    image_ids = open('/home/hbc/data/smartcity/SCdevkit/SC%s/ImageSets/Main/%s.txt'%(year, image_set)).read().strip().split()
+    list_file = open('darknet/scripts/SCdevkit/SC%s/%s_%s.txt'%(year, year, image_set), 'w')
     for image_id in image_ids:
-        list_file.write('%s/VOCdevkit/VOC%s/JPEGImages/%s.jpg\n'%(wd, year, image_id))
+        list_file.write('/home/hbc/data/smartcity/SCdevkit/SC%s/JPEGImages/%s.jpg\n'%(year, image_id))
         convert_annotation(year, image_id)
     list_file.close()
 
