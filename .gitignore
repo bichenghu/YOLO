@@ -16,6 +16,8 @@ obj/
 
 darknet53.conv.74
 
+darknet/data/SC2018/
+
 # OS Generated #
 .DS_Store*
 ehthumbs.db
