@@ -1,0 +1,6 @@
+classes= 1
+train  = /home/work/yolo/darknet/data/SC2018/2018_train.txt
+valid  = /home/work/yolo/darknet/data/SC2018/2018_test.txt
+names = data/voc_sc.names
+backup = backup
+
