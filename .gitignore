@@ -4,19 +4,17 @@
 *.out
 *.pyc
 *.weights
-old/
-mnist/
-caffe/
-grasp/
-images/
-opencv/
-convnet/
-decaf/
-submission/
 .fuse*
-darknet
 *.so
 *.a
+
+# ignore darknet but not darknet/
+darknet
+!darknet/
+
+obj/
+
+darknet53.conv.74
 
 # OS Generated #
 .DS_Store*
@@ -26,4 +24,3 @@ Thumbs.db
 *.swp
 
 *.h5
-
