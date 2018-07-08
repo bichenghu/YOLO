@@ -23,7 +23,7 @@ def convert(size, box):
 
 def convert_annotation(year, image_id):
     in_file = open('/home/hbc/data/smartcity/SCdevkit/SC%s/Annotations/%s.xml' % (year, image_id))
-    out_file = open('darknet/data/SC%s/labels/%s.txt' % (year, image_id), 'w')
+    out_file = open('/home/hbc/data/smartcity/SCdevkit/SC%s/labels/%s.txt' % (year, image_id), 'w')
     tree=ET.parse(in_file)
     root = tree.getroot()
     size = root.find('size')
@@ -46,10 +46,10 @@ def convert_annotation(year, image_id):
 wd = getcwd()
 
 for year, image_set in sets:
-    if not os.path.exists('darknet/data/SC%s/labels/'%(year)):
-        os.makedirs('darknet/data/SC%s/labels/'%(year))
+    if not os.path.exists('/home/hbc/data/smartcity/SCdevkit/SC%s/labels/'%(year)):
+        os.makedirs('/home/hbc/data/smartcity/SCdevkit/SC%s/labels/'%(year))
     image_ids = open('/home/hbc/data/smartcity/SCdevkit/SC%s/ImageSets/Main/%s.txt'%(year, image_set)).read().strip().split()
-    list_file = open('darknet/data/SC%s/%s_%s.txt'%(year, year, image_set), 'w')
+    list_file = open('/home/hbc/data/smartcity/SCdevkit/SC%s/%s_%s.txt'%(year, year, image_set), 'w')
     for image_id in image_ids:
         list_file.write('/home/hbc/data/smartcity/SCdevkit/SC%s/JPEGImages/%s.jpg\n'%(year, image_id))
         convert_annotation(year, image_id)
