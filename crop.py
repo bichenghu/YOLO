@@ -12,7 +12,7 @@ def getAllFiles(dir):
    return [os.path.join(dir,f) for f in os.listdir(dir) if f.endswith('.jpg')]
 
 #循环读图
-for dir in getAllFiles(r'/home/hbc/data/smartcity/dataset3/Cam5/frames/'):
+for dir in getAllFiles(r'/home/hbc/data/smartcity/dataset1/Cam1/frames/'):
     frame = Image.open(dir)
     label = os.path.splitext(dir.replace('frames','labels'))[0]+'.txt'
     print ('in '+label)
@@ -21,14 +21,14 @@ for dir in getAllFiles(r'/home/hbc/data/smartcity/dataset3/Cam5/frames/'):
     for line in file.readlines():
         i += 1
         data = line.split( )
-        x = data[0]
-        y = data[1]
-        w = data[2]
-        h = data[3]        
-        print ('box '+str(i)+': '+'x:'+x+' '+'y:'+y+' '+'w:'+w+' '+'h:'+h)
+        xmin = data[0]
+        ymin = data[1]
+        xmax = data[2]
+        ymax = data[3]        
+        print ('box '+str(i)+': '+'xmin='+xmin+' '+'ymin='+ymin+' '+'xmax='+xmax+' '+'ymax='+ymax)
         #box中的数必须是 int 否则会报错
-        bbox = [int(x),int(y),int(w),int(h)]
+        bbox = [int(xmin),int(ymin),int(xmax),int(ymax)]
         result = frame.crop(bbox)
-        gallery = os.path.splitext(dir.replace('frames/','gallery/dataset3_Cam5_'))[0]+'_'+str(i)+'.jpg'
+        gallery = os.path.splitext(dir.replace('frames/','gallery/dataset1_Cam1_'))[0]+'_'+str(i)+'.jpg'
         result.save(gallery)
 
